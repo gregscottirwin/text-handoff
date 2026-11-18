@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>Open in Messages</title>
+<style>
+:root { --bg:#f3f5f2; --fg:#18211d; --muted:#5d6b64; --accent:#17695a; --ink:#fff; --bubble:#d9efe8; --line:#dde3df; }
+@media (prefers-color-scheme: dark) { :root { --bg:#111614; --fg:#e5ece8; --muted:#9aa9a1; --accent:#58c2a5; --ink:#0b1f19; --bubble:#1f3a32; --line:#2b3531; color-scheme:dark; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.45 system-ui, -apple-system, Roboto, sans-serif; padding:24px max(16px, env(safe-area-inset-right)) 24px max(16px, env(safe-area-inset-left)); }
+main { max-width:480px; margin:0 auto; display:grid; gap:16px; }
+.lbl { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+.to { font-family:ui-monospace, Menlo, monospace; font-size:20px; }
+.bubble { background:var(--bubble); border-radius:18px 18px 4px 18px; padding:10px 14px; white-space:pre-wrap; overflow-wrap:anywhere; justify-self:end; max-width:92%; }
+a.go { display:flex; justify-content:center; align-items:center; min-height:56px; border-radius:12px; background:var(--accent); color:var(--ink); font-weight:700; font-size:18px; text-decoration:none; }
+a.go:focus-visible { outline:2px solid var(--fg); outline-offset:2px; }
+p.fine { font-size:13px; color:var(--muted); margin:0; }
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <div class="lbl">Sending to</div>
+    <div class="to" id="num">No number in this link</div>
+  </div>
+  <div class="bubble" id="body" hidden></div>
+  <a class="go" id="go">Open Messages</a>
+  <p class="fine" id="note">Opening Messages… If nothing happens, tap the button.</p>
+  <p class="fine">Nothing is sent until you tap send in Messages. This page stores nothing. The number and text travel in the link itself and never reach a server.</p>
+</main>
+<script>
+(function () {
+  var p = new URLSearchParams(location.hash.slice(1));
+  var to = (p.get("to") || "").replace(/[^\d+]/g, "");
+  var body = p.get("body") || "";
+  var d = to.replace(/\D/g, "");
+  if (d.length === 11 && d[0] === "1") d = d.slice(1);
+  if (to) document.getElementById("num").textContent = d.length === 10 ? "(" + d.slice(0, 3) + ") " + d.slice(3, 6) + "-" + d.slice(6) : to;
+  if (body) { var b = document.getElementById("body"); b.textContent = body; b.hidden = false; }
+  var go = document.getElementById("go");
+  if (!to) { go.hidden = true; document.getElementById("note").hidden = true; return; }
+  var href = "sms:" + to + "?body=" + encodeURIComponent(body);
+  go.href = href;
+  // Keep the number and text out of browser history once read.
+  try { history.replaceState(null, "", location.pathname); } catch (e) {}
+  setTimeout(function () { location.href = href; }, 150);
+})();
+</script>
+</body>
+</html>
